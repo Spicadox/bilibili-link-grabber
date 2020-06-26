@@ -22,7 +22,7 @@ import urllib.request
 # Final Version 2
 
 #TODO split user url and turn it into usable url(i.e.remove everything after '?' mark)
-#Sites with error: https://space.bilibili.com/654295/video?tid=0&page=1&keyword=&order=pubdate, https://space.bilibili.com/1726310?from=search&seid=12136548391520811086
+#Sites with error: https://space.bilibili.com/654295/video?tid=0&page=1&keyword=&order=pubdate, https://space.bilibili.com/1726310?from=search&seid=12136548391520811086, link is cut at & i.e."https://space.bilibili.com/1726310?from=search"
 # Learn about try, except and raise
 #TODO allow user to choose pages to scrape
 #TODO Decide if this script will support homepage scraping
