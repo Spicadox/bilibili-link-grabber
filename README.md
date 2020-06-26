@@ -30,3 +30,5 @@ python bilibiliVideoScraping.py -h
  Example:`python bilibiliVideoScraping.py -l <Bilibili Link>`
  
  
+### About Me
+As a data hoarder, Anime and Japanese Culture enthusiast, I needed a way to get all the video links from certain BiliBili pages in order to download it. Normally I would google a software or program that would allow me to do just that, but as a student studying in Computer Science(with a concentration in Software Engineer), I felt it was time to create and work on a project. I decided to work on the script using Python due to the fact that I wanted to practice and learn more about Python. I had fun learning about webscraping and enjoyed working on this script! Any tips or feedback on this script is much appreciated as I am sure there can be *much* improvement to be done! 
