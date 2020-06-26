@@ -358,7 +358,10 @@ try:
                         #Sleep(2) allows all urls to be scraped
                         # Assume the sleep allows driver to get all of page's source code  before soup initializes
                         # since without it not everypage will get scraped 
-                        time.sleep(1)
+                        if wait > 0:
+                            time.sleep(wait - 1)
+                        else:
+                            time.sleep(wait)
 
                         #driver.set_page_load_timeout(10)
                         #driver.delete_all_cookies()
