@@ -38,18 +38,18 @@ python bilibiliVideoScraping.py -h
  **User's 投稿(submissions) pages and with the 全部(all) filter**
  <kbd>
   <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/submission_section.png" width="900" height="750">
- <kbd>
+ </kbd>
  
  
  **User's 频道 (channel) pages which in most cases are single page application(meaning url doesn't change no matter which page you're on)**
  <kbd>
   <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/channel_section.png" width="1000" height="500">
- <kbd>
+ </kbd>
  
  **Search pages**
  <kbd>
   <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/search_page.png" width="800" height="1000">
- <kbd>
+ </kbd>
 ---
  
 ### About Me
