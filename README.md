@@ -48,9 +48,11 @@ python bilibiliVideoScraping.py -h
  
  
  Search pages
+ 
  <kbd>
   <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/search_page.png" width="800" height="1000">
  </kbd>
+ 
 ---
  
 ### About Me
