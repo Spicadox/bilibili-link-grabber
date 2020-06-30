@@ -1,4 +1,4 @@
-# bilibili-link-scraper
+# bilibili-link-grabber
 ## Testing
 ### Overview
 This is a simple script that scrapes all the video urls from certain [BiliBili](https://www.bilibili.com/) pages. Currently it is able to scrape all video links from search result pages, user's 投稿(submissions) pages, and user's 频道 (channel) pages. Rather than right clicking each video in order to obtain its url, this script is designed to allow users to obtain all the video urls from each page and writing all of that into a csv file. The csv file can be used by [annie](https://github.com/iawia002/annie) or [youtube-dl](https://github.com/ytdl-org/youtube-dl)(not recommended as youtube-dl doesn't download all parts of the video) to download every single video with the given url in the csv file.
@@ -31,4 +31,4 @@ python bilibiliVideoScraping.py -h
  
  
 ### About Me
-As a data hoarder, Anime enthusiast, and a self proclaim Japanophile, I needed a way to get all the video links from certain BiliBili pages in order to download it. Normally I would google a software or program that would allow me to do just that, but as a student studying in Computer Science(with a concentration in Software Engineer), I felt it was time to create and work on a project. I decided to work on the script using Python due to the fact that I wanted to practice and learn more about Python. I had fun learning about web scraping and enjoyed working on this script! Any tips or feedback on this script are much appreciated as I am sure there can be *much* improvement to be done! 
+As a data hoarder, anime enthusiast, and a self proclaim Japanophile, I needed a way to get all the video links from certain BiliBili pages in order to download it. Normally I would google a software or program that would allow me to do just that, but as a student studying in Computer Science(with a concentration in Software Engineer), I felt it was time to create and work on a project. I decided to work on the script using Python due to the fact that I wanted to practice and learn more about Python. I had fun learning about web scraping and enjoyed working on this script! Any tips or feedback on this script is much appreciated as I am sure there can be *much* improvement to be done! 
