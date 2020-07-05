@@ -27,6 +27,7 @@ import urllib.request
 #TODO allow user to choose pages to scrape
 #TODO Decide if this script will support homepage scraping
 #TODO work on allow user to scrape a page with filtered settings
+#TODO Work on opening and then writing rather than rewriting file
 
 #Tested Links:
     #a.https://space.bilibili.com/1726310/video
@@ -247,14 +248,12 @@ try:
 
         parser.add_argument('-d', '--driver',
                             type=str,
-
                             nargs='+',
                             default=defaultPath,
                             help="Absolute web driver path")
 
         parser.add_argument('-s', '--save',
                             type=str,
-
                             nargs='+',
                             default=defaultPath,
                             help="The user's chosen absolute save path for the csv file")
@@ -263,7 +262,7 @@ try:
                             type=str,
                             metavar='',
                             required=True,
-                            help="Link to extract video urls")
+                            help="Link to extract video urls,it is recommended for the link to be enclosed in double quotation though not necessary")
 
         parser.add_argument('-w', '--wait',
                             type=int,
@@ -275,6 +274,8 @@ try:
                             help="Show more information as the command executes")
 
         # parser.add_argument('-p', '--page',
+        #                     type=int,
+        #                     nargs='+',
         #                     action='store_true',
         #                     help="Select specific page(s) to scrape")
 
@@ -285,6 +286,9 @@ try:
             wait = args.wait
         else:
             wait = 2
+
+        # pages = args.page
+        # print(pages)
 
         INVALID_CHARACTERS_RE =  re.compile(r"^[^<>/{}[\]~`]*$")
         if INVALID_CHARACTERS_RE.match(args.name):
