@@ -9,7 +9,7 @@ Requires/recommended [Python](https://www.python.org/downloads/) version 3.7+
 
 This script requires non-standard modules: [requests](https://pypi.org/project/requests/), [BeautifulSoup](https://pypi.org/project/beautifulsoup4/), and [Selenium](https://pypi.org/project/selenium/). [ChromeDriver](https://chromedriver.chromium.org/) is also required to work with Selenium, and ensure you're downloading the version that matches your Chrome build. A requirements text file will be included and the command `pip3 install -r requirements.txt` (or `pip`)can be used to install the required modules. Note it is recommended that pip is installed and/or up to date. It is also recommended that the ChromeDriver is installed and placed in the same folder as this script as there would be no need to specify the driver path later on. It should be noted that the default ouput for the csv file will be in the same folder as this script.
 
-The executable file in the repository is a basic and demo version of the current link scraper script. This executable file does involve command line arugments thus making it easier to use. The file is temporary and will probably be removed after a little more progress on the link scraper script.
+The executable file in the repository is a basic demo version of the current link scraper script. This executable file does not involve command line arugments, thus making it easier to use. The file is temporary and will probably be removed after a little more progress on the link scraper script.
 
  ---
  
@@ -36,20 +36,27 @@ python bilibiliVideoScraping.py -h
  ### This script is intended to be used on the following BiliBili pages: 
  
  BiliBili search pages
- <kbd>
-  <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/search_page.png" width="800" height="1000">
- </kbd>
+ <p align="left">
+  <kbd>
+   <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/search_page.png" width="800" height="1000">
+  </kbd>
+ </p>
+ 
  
  User's 投稿(submissions) pages and with the 全部(all) filter
- <kbd>
-  <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/submission_section.png" width="900" height="750">
- </kbd>
+ <p align="left">
+  <kbd>
+   <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/submission_section.png" width="900" height="750" img align="right">
+  </kbd>
+ </p>
  
  
  User's 频道 (channel) pages which in most cases are single page application(meaning url doesn't change no matter which page you're on)
- <kbd>
-  <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/channel_section.png" width="1000" height="500">
- </kbd>
+ <p align="left">
+  <kbd>
+   <img src= "https://github.com/AnimeSam/bilibili-link-grabber/blob/master/images/channel_section.png" width="1000" height="500" img align="right">
+  </kbd>
+ </p>
  
 ---
  
