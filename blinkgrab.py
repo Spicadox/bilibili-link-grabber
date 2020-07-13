@@ -1,3 +1,4 @@
+
 import requests 
 from bs4 import BeautifulSoup
 from csv import writer 
@@ -12,11 +13,14 @@ from selenium.webdriver.chrome.options import Options
 
 import os
 import pathlib
+import sys
 
 import re
 import argparse
 import time
 import urllib.request
+
+
 
 
 # Final Version 2
@@ -28,6 +32,7 @@ import urllib.request
 #TODO Decide if this script will support homepage scraping
 #TODO work on allow user to scrape a page with filtered settings
 #TODO Work on opening and then writing rather than rewriting file
+#TODO A summary of successes and failures of getting urls per page
 
 #Tested Links:
     #a.https://space.bilibili.com/1726310/video
@@ -242,6 +247,7 @@ try:
         # Arguments
         parser.add_argument('-n', '--name',
                             type=str,
+                            nargs='+',
                             metavar='',
                             default='output',
                             help="Name of the csv file")
@@ -281,7 +287,17 @@ try:
 
         args = parser.parse_args()
         
+        if args.driver is not None:
+            DRIVER_PATH = " ".join(args.driver)
+            print("DRIVER_PATH: " + DRIVER_PATH)
+
+        if args.name is not None:
+            FILE_NAME = "_".join(args.name)
+            print("File Name: " + FILE_NAME)
+
+
         link = args.link
+        print("Link: " + link + "\n")
         if args.wait is not None:
             wait = args.wait
         else:
@@ -314,23 +330,26 @@ try:
         with open(defaultFile + ".csv", 'w', newline='') as csv_file:
                 csv_writer = writer(csv_file)
 
-                #url = input("URL: ")
-
                 #DRIVER_PATH = r"C:\Users\samph\AppData\Local\Programs\Python\Python37-32\Python Files\WebScraping\chromedriver.exe"
-
-                if args.driver is not None:
-                    driver = webdriver.Chrome(os.path.abspath(str(args.driver) + r"\\chromedriver.exe"))
-                    if args.quiet:
-                        print(os.path.abspath(str(defaultPath) + "\\chromedriver.exe"))
-                else: 
-                    driver = webdriver.Chrome(os.path.abspath(str(defaultPath) + r"\\chromedriver.exe"))
-                    if args.quiet:
-                        print(os.path.abspath(str(defaultPath) + "\\chromedriver.exe"))
+                try:
+                    if args.driver is not None:
+                        driver = webdriver.Chrome(DRIVER_PATH + r"\\chromedriver.exe")
+                        if args.quiet:
+                            print("Chromedriver Path:" + DRIVER_PATH + "\\chromedriver.exe")
+                    else: 
+                        driver = webdriver.Chrome(os.path.abspath(str(defaultPath) + r"\\chromedriver.exe"))
+                        if args.quiet:
+                            print("Chromedriver Path:" + os.path.abspath(str(defaultPath) + "\\chromedriver.exe"))
+                except: 
+                    sys.exit("Error finding ChromeDriver. Please make sure path contains the ChromeDriver.")
 
                 #driver = webdriver.Chrome(os.path.abspath(str(defaultPath) + r"\\WebScraping\chromedriver.exe"))
 
                 driver.get(link)
+                      
                 soup = make_soup(driver)
+               
+
                 lastPage = find_last_page(driver)
                 if args.quiet:
                     print("Total Pages: " + str(lastPage))
@@ -404,11 +423,16 @@ try:
 
                 # Close all windows
                 driver.quit()
-    except KeyboardInterrupt as ke:
+    except KeyboardInterrupt:
         if args.quiet:
-            print('\nUser cancelled the operation')
+            sys.exit('\nUser cancelled the operation')
         driver.quit()
+        
 except Exception:
     if args.quiet:
         print("An unexpected error has occurred!")
+        sys.exit("Exiting script")
+    # Nothing executes past this comment
     driver.quit()
+
+
