@@ -255,7 +255,7 @@ try:
         parser.add_argument('-d', '--driver',
                             type=str,
                             nargs='+',
-                            default=defaultPath,
+                            #default=defaultPath,
                             help="Absolute web driver path")
 
         parser.add_argument('-s', '--save',
@@ -287,13 +287,18 @@ try:
 
         args = parser.parse_args()
         
+        # If --driver is used then the driver path(removing all spaces) is set and printed
         if args.driver is not None:
             DRIVER_PATH = " ".join(args.driver)
             print("DRIVER_PATH: " + DRIVER_PATH)
 
-        if args.name is not None:
+        # If --name is used then the custom file name is printed else default name is printed 
+        FILE_NAME = "output"
+        if args.name != "output":
             FILE_NAME = "_".join(args.name)
             print("File Name: " + FILE_NAME)
+        else:
+            print("File Name: output")
 
 
         link = args.link
@@ -307,7 +312,7 @@ try:
         # print(pages)
 
         INVALID_CHARACTERS_RE =  re.compile(r"^[^<>/{}[\]~`]*$")
-        if INVALID_CHARACTERS_RE.match(args.name):
+        if INVALID_CHARACTERS_RE.match(FILE_NAME):
             if args.name is not None:
                 defaultFile = os.path.abspath(str(args.save) + "\\" + str(args.name)) 
                 if args.quiet:
@@ -431,7 +436,7 @@ try:
 except Exception:
     if args.quiet:
         print("An unexpected error has occurred!")
-        sys.exit("Exiting script")
+        #sys.exit("Exiting script")
     # Nothing executes past this comment
     driver.quit()
 
