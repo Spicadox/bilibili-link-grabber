@@ -16,7 +16,6 @@ The executable file in the repository is a basic demo version of the current lin
  ---
  
 ### Options and Usages
-TBD
 ```
 python bilibiliVideoScraping.pu [OPTIONS] -l [URL]
 
@@ -25,7 +24,7 @@ python bilibiliVideoScraping.py -h
   -h, --help         show this help message and exit
   -n, --name         Name of the csv file
   -d, --driver       Absolute web driver path
-  -p, --path         The user's chosen absolute path for the csv file 
+  -p, --save         The user's chosen absolute save path for the csv file 
   -l, --link         Link to extract video urls
   -w, --wait         The amount of second to stop and wait for browser to load. Recommended for use only if browser
                         is taking longer than 2 seconds to load. Prevent links from being extracted on same page as
@@ -33,6 +32,8 @@ python bilibiliVideoScraping.py -h
   -q, --quiet       Limit the information printed onto the console as the script executes
  ```
  Example:`python bilibiliVideoScraping.py -l <Bilibili Link>`
+ 
+ Note: It is reccommended that to include '&' in any of the argument that the entire argument get enclosed in quotes or double quotes.
  
  ---
  ### This script is intended to be used on the following BiliBili pages: 
