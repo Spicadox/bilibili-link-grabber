@@ -33,6 +33,7 @@ import urllib.request
 #TODO work on allow user to scrape a page with filtered settings
 #TODO Work on opening and then writing rather than rewriting file
 #TODO A summary of successes and failures of getting urls per page
+#TODO If file name contains just periods then save location moves back one 
 
 #Tested Links:
     #a.https://space.bilibili.com/1726310/video
@@ -275,11 +276,10 @@ try:
                             action='store_false',
                             help="Show more information as the command executes")
 
-        # parser.add_argument('-p', '--page',
-        #                     type=int,
-        #                     nargs='+',
-        #                     action='store_true',
-        #                     help="Select specific page(s) to scrape")
+        parser.add_argument('-p', '--page',
+                            type=int,
+                            nargs='+',
+                            help="Select specific page(s) to scrape")
 
         args = parser.parse_args()
         
@@ -351,27 +351,66 @@ try:
                 except: 
                     sys.exit("Error finding ChromeDriver. Please make sure path contains the ChromeDriver.")
 
-                driver.get(link)
+
+                # print("I GOT PASS THIS POINT")    
+
+
+
+                # if args.page is None:
+                #     driver.get(link)
+                # else:
+                #     if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:
+                #         pageExtension = '&page='+str(args.page[0])
+                #     else:
+                #         pageExtension = '?page='+str(args.page[0])
+                #     driver.get(link + pageExtension)
                       
+
+                # print("I GOT PASS THIS POINT")    
+
+
                 soup = make_soup(driver)
                
+                if args.page is not None:
+                    lastUserPage = args.page[len(args.page) - 1]
+                    totalUserPage = len(args.page)
+                    currentUserPage = args.page[0]
+
 
                 lastPage = find_last_page(driver)
-                if args.quiet:
-                    print("Total Pages: " + str(lastPage))
+                if args.page is not None:
+                    if args.quiet:
+                        print("Total Pages: " + str(totalUserPage))
+                elif args.quiet:
+                    print("Total User Selected Pages: " + str(lastPage))
+
                 page = 1
                 pageExtension = ''
                 
                 if link.find('channel') == -1 and lastPage >= 1:  
-                    if args.quiet:
-                        print("\n" + 'Page:',1)
+                    if args.page is None:
+                        if args.quiet:
+                            print("\n" + 'Page:',1)
+                    else:
+                        if args.quiet:
+                            print("\n" + 'Page:',currentUserPage)
                     scrape_url(driver)
-                    while page < lastPage:
+                    while page < lastPage or (args.page is not None and currentUserPage < lastUserPage):
                         page = page + 1
-
+                        if args.page is not None:
+                            currentUserPage = args.page[currentUserPage + 1]
 
                         if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:
-                            pageExtension = '&page='+str(page)
+                            if args.page is not None:
+                                pageExtension = '&page='+str(page)
+                                if args.quiet:
+                                    print(link+pageExtension)
+                            else:
+                                pageExtension = '&page='+str(currentUserPage)
+                                if args.quiet:
+                                    print(link+pageExtension)
+                        elif args.page is not None:
+                            pageExtension = '?page='+str(currentUserPage)
                             if args.quiet:
                                 print(link+pageExtension)
                         else:
