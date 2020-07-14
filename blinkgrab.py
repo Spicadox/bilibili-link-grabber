@@ -57,7 +57,6 @@ import urllib.request
 
 #Works: a,b,c,d,e,f,h,i
 
-
 def make_soup(driver): 
     url = driver.current_url
     response = requests.get(url)
@@ -249,19 +248,16 @@ try:
                             type=str,
                             nargs='+',
                             metavar='',
-                            default='output',
                             help="Name of the csv file")
 
         parser.add_argument('-d', '--driver',
                             type=str,
                             nargs='+',
-                            #default=defaultPath,
                             help="Absolute web driver path")
 
         parser.add_argument('-s', '--save',
                             type=str,
                             nargs='+',
-                            default=defaultPath,
                             help="The user's chosen absolute save path for the csv file")
         
         parser.add_argument('-l', '--link',
@@ -287,68 +283,73 @@ try:
 
         args = parser.parse_args()
         
-        # If --driver is used then the driver path(removing all spaces) is set and printed
-        if args.driver is not None:
+        
+        DRIVER_PATH = str(defaultPath)
+        # If --driver is used then the driver path(removing all spaces) is set and printed 
+        if args.driver is not None:  
             DRIVER_PATH = " ".join(args.driver)
-            print("DRIVER_PATH: " + DRIVER_PATH)
+        if args.quiet:
+            print("DRIVER PATH: " + DRIVER_PATH + "\\chromedriver.exe")
+       
+
+        # If --save is used then the save path(removing all spaces) is set and printed
+        SAVE_PATH = str(defaultPath)
+        if args.save is not None:
+            SAVE_PATH = " ".join(args.save)
+        if args.quiet:
+            print("SAVE PATH: " + SAVE_PATH)
 
         # If --name is used then the custom file name is printed else default name is printed 
         FILE_NAME = "output"
-        if args.name != "output":
+        if args.name is not None:
             FILE_NAME = "_".join(args.name)
+        if args.quiet:
             print("File Name: " + FILE_NAME)
-        else:
+        elif args.quiet:
             print("File Name: output")
 
-
+        # sets link and prints link
         link = args.link
-        print("Link: " + link + "\n")
+        if args.quiet:
+            print("Link: " + link + "\n")
+        
+        # sets wait time
         if args.wait is not None:
             wait = args.wait
         else:
             wait = 2
 
-        # pages = args.page
-        # print(pages)
-
+        # Check for invalid characters in file name and append it to current path
         INVALID_CHARACTERS_RE =  re.compile(r"^[^<>/{}[\]~`]*$")
-        if INVALID_CHARACTERS_RE.match(FILE_NAME):
-            if args.name is not None:
-                defaultFile = os.path.abspath(str(args.save) + "\\" + str(args.name)) 
+        #INVALID_CHARACTERS_RE = re.compile(r"\\*?<>:\"/\|")
+
+        if args.name is not None:
+            if INVALID_CHARACTERS_RE.match(FILE_NAME):
+                filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME) 
                 if args.quiet:
-                    print(defaultFile)
+                    print("Full File Path: " + filePath + ".csv")
             else:
-                defaultFile = os.path.abspath(str(defaultPath) + "\\" + str(args.name)) 
                 if args.quiet:
-                    print(defaultFile)  
+                    print("Error: illegal characters detected in file name")
+                sys.exit()
         else:
+            filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME)
             if args.quiet:
-                print("Error: illegal characters detected in file name or save path")
-            exit()
+                    print("Full File Path: " + filePath + ".csv")
             
 
         # create variable = open(defaultFile + ".csv", 'w', newline='') so try except, we can use variable.close()
         #f = open('/pythonwork/thefile_subset1.csv', 'w')
         #writer = csv.writer(f)
         #f.close()
-        print(os.path.join(str(args.driver),"\\chromedriver.exe"))
-        with open(defaultFile + ".csv", 'w', newline='') as csv_file:
-                csv_writer = writer(csv_file)
 
-                #DRIVER_PATH = r"C:\Users\samph\AppData\Local\Programs\Python\Python37-32\Python Files\WebScraping\chromedriver.exe"
+        with open(filePath + ".csv", 'w', newline='') as csv_file:
+                csv_writer = writer(csv_file)
+                
                 try:
-                    if args.driver is not None:
-                        driver = webdriver.Chrome(DRIVER_PATH + r"\\chromedriver.exe")
-                        if args.quiet:
-                            print("Chromedriver Path:" + DRIVER_PATH + "\\chromedriver.exe")
-                    else: 
-                        driver = webdriver.Chrome(os.path.abspath(str(defaultPath) + r"\\chromedriver.exe"))
-                        if args.quiet:
-                            print("Chromedriver Path:" + os.path.abspath(str(defaultPath) + "\\chromedriver.exe"))
+                    driver = webdriver.Chrome(DRIVER_PATH + r"\\chromedriver.exe")
                 except: 
                     sys.exit("Error finding ChromeDriver. Please make sure path contains the ChromeDriver.")
-
-                #driver = webdriver.Chrome(os.path.abspath(str(defaultPath) + r"\\WebScraping\chromedriver.exe"))
 
                 driver.get(link)
                       
@@ -437,7 +438,7 @@ except Exception:
     if args.quiet:
         print("An unexpected error has occurred!")
         #sys.exit("Exiting script")
-    # Nothing executes past this comment
+    # Nothing executes past this comment(meaning nothing executes past sys.exit())
     driver.quit()
 
 
