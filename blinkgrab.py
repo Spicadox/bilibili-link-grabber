@@ -20,7 +20,7 @@ import argparse
 import time
 import urllib.request
 
-
+import traceback
 
 
 # Final Version 2
@@ -351,26 +351,21 @@ try:
                 except: 
                     sys.exit("Error finding ChromeDriver. Please make sure path contains the ChromeDriver.")
 
+                # Start up browser with user's first specified page
+                if args.page is not None:
+                    if "keyword" in link:
+                        driver.get(link + "&page=" + str(args.page[0]))
 
-                # print("I GOT PASS THIS POINT")    
-
-
-
-                # if args.page is None:
-                #     driver.get(link)
-                # else:
-                #     if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:
-                #         pageExtension = '&page='+str(args.page[0])
-                #     else:
-                #         pageExtension = '?page='+str(args.page[0])
-                #     driver.get(link + pageExtension)
+                    else:
+                        driver.get(link + "?page=" + str(args.page[0]))
+                else:
+                    driver.get(link)
                       
-
-                # print("I GOT PASS THIS POINT")    
 
 
                 soup = make_soup(driver)
                
+               # Find the last page, total pages, current page in page argument 
                 if args.page is not None:
                     lastUserPage = args.page[len(args.page) - 1]
                     totalUserPage = len(args.page)
@@ -378,15 +373,16 @@ try:
 
 
                 lastPage = find_last_page(driver)
-                if args.page is not None:
+                if args.page is None:
                     if args.quiet:
-                        print("Total Pages: " + str(totalUserPage))
+                        print("Total Pages: " + str(lastPage))
                 elif args.quiet:
-                    print("Total User Selected Pages: " + str(lastPage))
+                    print("Total User Selected Pages: " + str(totalUserPage))
 
                 page = 1
                 pageExtension = ''
                 
+                # If the link does not contain the word 'channel' and is not the last page 
                 if link.find('channel') == -1 and lastPage >= 1:  
                     if args.page is None:
                         if args.quiet:
@@ -394,14 +390,21 @@ try:
                     else:
                         if args.quiet:
                             print("\n" + 'Page:',currentUserPage)
-                    scrape_url(driver)
-                    while page < lastPage or (args.page is not None and currentUserPage < lastUserPage):
-                        page = page + 1
-                        if args.page is not None:
-                            currentUserPage = args.page[currentUserPage + 1]
 
+                    scrape_url(driver)
+                    count = 1
+                    # If the current page is not the last page
+                    # or page argument is selected and the last page has not been reached
+                    while (args.page is None and page < lastPage) or (args.page is not None and currentUserPage < lastUserPage):
+                        page = page + 1
+
+                        if args.page is not None:
+                            currentUserPage = int(args.page[count])
+                            if args.quiet:
+                                print("\nPage:",currentUserPage)
+                        count = count + 1
                         if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:
-                            if args.page is not None:
+                            if args.page is None:
                                 pageExtension = '&page='+str(page)
                                 if args.quiet:
                                     print(link+pageExtension)
@@ -417,12 +420,12 @@ try:
                             pageExtension = '?page='+str(page)
                             if args.quiet:
                                 print(link+pageExtension)
-                        
                         # pageExtension = '?page='+str(page)
-
-                        fullUrl = link+pageExtension
+                        if args.page is None:
+                            fullUrl = link + pageExtension
+                        else:
+                            fullUrl = link + pageExtension
                         driver.get(fullUrl)
-
                         #Sleep(2) allows all urls to be scraped
                         # Assume the sleep allows driver to get all of page's source code  before soup initializes
                         # since without it not everypage will get scraped 
@@ -433,9 +436,76 @@ try:
 
                         #driver.set_page_load_timeout(10)
                         #driver.delete_all_cookies()
-                        
                         soup = make_soup(driver)
                         scrape_url(driver)
+
+#--------------------------------------------------------------------------------------------------------------------------------#
+                    #     # If the current page is not the last page
+                #     # or page argument is selected and the last page has not been reached
+                #     ## (args.page is not None and currentUserPage < lastUserPage)
+                #     if args.page is None:
+                #         while page < lastPage:
+                #             page = page + 1
+
+
+                #         if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:
+                #             pageExtension = '&page='+str(page)
+                #             if args.quiet:
+                #                 print(link+pageExtension)
+                #         else:
+                #             pageExtension = '?page='+str(page)
+                #             if args.quiet:
+                #                 print(link+pageExtension)
+                        
+                #         # pageExtension = '?page='+str(page)
+
+                #         fullUrl = link+pageExtension
+                #         driver.get(fullUrl)
+
+                #         #Sleep(2) allows all urls to be scraped
+                #         # Assume the sleep allows driver to get all of page's source code  before soup initializes
+                #         # since without it not everypage will get scraped 
+                #         if wait > 0:
+                #             time.sleep(wait - 1)
+                #         else:
+                #             time.sleep(wait)
+
+                #         #driver.set_page_load_timeout(10)
+                #         #driver.delete_all_cookies()
+                        
+                #         soup = make_soup(driver)
+                #         scrape_url(driver)
+
+                #     else:
+                #         while currentUserPage < lastUserPage:
+                #             count = 1                           
+                #             currentUserPage = int(args.page[count])
+                #             print(currentUserPage)
+                #             count = count + 1
+                #             if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:                        
+                #                 pageExtension = '&page='+str(page)
+                #             if args.quiet:
+                #                 print(link+pageExtension)
+                                
+                #             pageExtension = '?page='+str(currentUserPage)
+                #             if args.quiet:
+                #                 print(link+pageExtension)
+                        
+                #             fullUrl = str(link) + str(currentUserPage)
+                #             driver.get(fullUrl)
+                #             #Sleep(2) allows all urls to be scraped
+                #             # Assume the sleep allows driver to get all of page's source code  before soup initializes
+                #             # since without it not everypage will get scraped 
+                #             if wait > 0:
+                #                 time.sleep(wait - 1)
+                #             else:
+                #                 time.sleep(wait)
+
+                #             #driver.set_page_load_timeout(10)
+                #             #driver.delete_all_cookies()
+                #             soup = make_soup(driver)
+                #             scrape_url(driver)
+#--------------------------------------------------------------------------------------------------------------------------------#
 
                 # In the event that the webpage is a single page application
                 else:     
@@ -473,9 +543,11 @@ try:
             sys.exit('\nUser cancelled the operation')
         driver.quit()
         
-except Exception:
+except Exception as e:
     if args.quiet:
         print("An unexpected error has occurred!")
+        print(e)
+        traceback.print_exc()
         #sys.exit("Exiting script")
     # Nothing executes past this comment(meaning nothing executes past sys.exit())
     driver.quit()
