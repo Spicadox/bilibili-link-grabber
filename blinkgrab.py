@@ -319,6 +319,11 @@ try:
         else:
             wait = 2
 
+        # Ensure that user inputted arguments are valid numbers
+
+
+        
+
         # Check for invalid characters in file name and append it to current path
         INVALID_CHARACTERS_RE =  re.compile(r"^[^<>/{}[\]~`]*$")
         #INVALID_CHARACTERS_RE = re.compile(r"\\*?<>:\"/\|")
@@ -353,11 +358,14 @@ try:
 
                 # Start up browser with user's first specified page
                 if args.page is not None:
+                    if "/channel/detail?cid=" in link:
+                        driver.get(link)
+
                     if "keyword" in link:
                         driver.get(link + "&page=" + str(args.page[0]))
 
-                    else:
-                        driver.get(link + "?page=" + str(args.page[0]))
+                    # else:
+                    #     driver.get(link + "?page=" + str(args.page[0]))
                 else:
                     driver.get(link)
                       
@@ -509,12 +517,14 @@ try:
 
                 # In the event that the webpage is a single page application
                 else:     
-                    try:
-                        i = 1
-                        h = 1 
-                        if args.quiet:
-                            print("\n" + 'Page:',1)
-                        # Loops through all video urls through all pages    
+                    i = 1
+                    h = 1 
+                    if args.quiet and args.page is None:
+                        print("\n" + 'Page:',1)
+                    elif args.quiet and args.page is not None:
+                        print("\n" + 'Page:',currentUserPage)
+                    # Loops through all video urls through all pages
+                    if args.page is None:    
                         while i <= lastPage:
                             for video in soup.find_all('a', class_='cover cover-normal'):    
                                 link = video['href'].replace('//','https://')
@@ -532,9 +542,42 @@ try:
                             i = i + 1
                             soup = make_soup(driver)
                         if args.quiet:    
-                            print("\n" + 'Extracted:',h-1 ,'URLS')           
-                    except:
-                        raise Exception
+                            print("\n" + 'Extracted:',h-1 ,'URLS')       
+
+                    else:
+                        count = 1
+                        h = 1
+                        counter = 0
+                        # originally <= 
+                        while counter < totalUserPage:
+                            counter = counter + 1
+                            print("CurrentUserPage",currentUserPage)
+                            print("lastUserPage",lastUserPage)
+                            
+                            # Change pages by typing page number 
+                            if currentUserPage < lastUserPage:
+                                currentUserPage = int(args.page[count])
+                                if currentUserPage != 1:
+                                    inputPageElement = driver.find_element_by_class_name('be-pager-options-elevator')
+                                    inputPage = inputPageElement.find_element_by_class_name('space_input')
+                                    inputPage.send_keys(currentUserPage)
+                                    inputPage.send_keys(Keys.ENTER)
+                            count = count + 1
+
+                            # Scrape
+                            for video in soup.find_all('a', class_='cover cover-normal'):    
+                                link = video['href'].replace('//','https://')
+                                csv_writer.writerow([link])
+                                if args.quiet:
+                                    print(str(h)+'.' + link)
+                                h = h + 1
+                                
+                                #TODO Find a better way than using sleep
+                            time.sleep(wait)
+
+                            soup = make_soup(driver)
+                    if args.quiet:    
+                        print("\n" + 'Extracted:',h-1 ,'URLS')       
 
                 # Close all windows
                 driver.quit()
