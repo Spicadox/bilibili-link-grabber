@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 import requests 
 from bs4 import BeautifulSoup
 from csv import writer 
@@ -14,13 +14,15 @@ from selenium.webdriver.chrome.options import Options
 import os
 import pathlib
 import sys
+import traceback
 
+from collections import Counter
 import re
 import argparse
 import time
 import urllib.request
 
-import traceback
+
 
 
 # Final Version 2
@@ -320,9 +322,24 @@ try:
             wait = 2
 
         # Ensure that user inputted arguments are valid numbers
+        if args.page is not None:
+            duplicatePages = []
+            countPages= Counter(args.page)
+            pagesList = args.page
 
+            i = 0
+            for pages in pagesList:
+                if pages <= 0:
+                    sys.exit('\nError, page number(s) must be greater than 0.')
+            for i in countPages:
+                if countPages[i] > 1:
+                    duplicatePages.append(i)
+            if duplicatePages != []:
+                duplicatePages.sort()
+                sys.exit('\nDuplicated pages detected: Page ' + ",".join(str(i) for i in duplicatePages))
 
         
+
 
         # Check for invalid characters in file name and append it to current path
         INVALID_CHARACTERS_RE =  re.compile(r"^[^<>/{}[\]~`]*$")
@@ -350,7 +367,7 @@ try:
 
         with open(filePath + ".csv", 'w', newline='') as csv_file:
                 csv_writer = writer(csv_file)
-                
+                time.sleep(2)
                 try:
                     driver = webdriver.Chrome(DRIVER_PATH + r"\\chromedriver.exe")
                 except: 
@@ -372,6 +389,7 @@ try:
 
 
                 soup = make_soup(driver)
+                    
                
                # Find the last page, total pages, current page in page argument 
                 if args.page is not None:
@@ -390,6 +408,16 @@ try:
                 page = 1
                 pageExtension = ''
                 
+
+                # Another test to ensure that user's pages does not exceed the last page
+                if args.page is not None:
+                    for page in args.page:
+                            if page > lastPage:
+                                driver.quit()
+                                sys.exit("Error, input page("+str(page)+") can't exceed the last page")
+
+
+
                 # If the link does not contain the word 'channel' and is not the last page 
                 if link.find('channel') == -1 and lastPage >= 1:  
                     if args.page is None:
@@ -543,7 +571,8 @@ try:
                             soup = make_soup(driver)
                         if args.quiet:    
                             print("\n" + 'Extracted:',h-1 ,'URLS')       
-
+# TEST
+# https://space.bilibili.com/2489294/channel/index
                     else:
                         count = 1
                         h = 1
