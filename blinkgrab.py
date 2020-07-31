@@ -30,12 +30,16 @@ import urllib.request
 #TODO split user url and turn it into usable url(i.e.remove everything after '?' mark)
 #Sites with error: https://space.bilibili.com/654295/video?tid=0&page=1&keyword=&order=pubdate, https://space.bilibili.com/1726310?from=search&seid=12136548391520811086, link is cut at & i.e."https://space.bilibili.com/1726310?from=search"
 # Learn about try, except and raise
-#TODO allow user to choose pages to scrape
 #TODO Decide if this script will support homepage scraping
 #TODO work on allow user to scrape a page with filtered settings
 #TODO Work on opening and then writing rather than rewriting file
 #TODO A summary of successes and failures of getting urls per page
 #TODO If file name contains just periods then save location moves back one 
+#TODO 'from_source' is not recognized as an internal or external command,operable program or batch file.
+
+##Known Errors
+# "response = requests.get(url)" prevents having no urls in the page being written
+# "python No connection adapters were found for 'data:,'" occurred aftering completely finishing --page arugment checks
 
 #Tested Links:
     #a.https://space.bilibili.com/1726310/video
@@ -75,7 +79,6 @@ def make_soup(driver):
 
 def scrape_url(driver):
     i = 1
-
     try:
         if soup.find_all('a', class_='img-anchor') != []:
             try: 
@@ -227,13 +230,29 @@ def find_last_page(driver):
 
         #Tested with: https://space.bilibili.com/1726310?from=search&seid=12136548391520811086
         else:
-            print("Can't find total pages")
-            lastPage = 0
+            lastPage = 1
             return lastPage
 
     except:
         print("Error: Can't get the last page")
         raise Exception
+
+
+# Currently renames output file if -append is not specified with _#
+def renameFile(FILE_NAME):  
+    while os.path.isfile(FILE_NAME + '.csv') == True:
+        # Check whether csv already exist
+        if args.append is False:
+            # Split filename starting from the back once
+            fileNameArray = FILE_NAME.rsplit("_", 1)
+            # Finds if there is any number in the last array index and if not append "_1" to the filename 
+            anyNumber = re.findall(r'[0-9]+', fileNameArray[len(fileNameArray)-1])
+            if anyNumber == []:
+                FILE_NAME = FILE_NAME + "_1"
+            else:
+                nextFileNumber = int(fileNameArray[len(fileNameArray) - 1]) + 1
+                FILE_NAME = fileNameArray[0] + "_" + str(nextFileNumber)
+    return FILE_NAME
 
 try:
     try: 
@@ -251,7 +270,7 @@ try:
                             type=str,
                             nargs='+',
                             metavar='',
-                            help="Name of the csv file")
+                            help="Name of the csv file. If not specified a default name will be used.")
 
         parser.add_argument('-d', '--driver',
                             type=str,
@@ -282,6 +301,10 @@ try:
                             type=int,
                             nargs='+',
                             help="Select specific page(s) to scrape")
+
+        parser.add_argument('-a', '--append',
+                            action='store_true',
+                            help="Scape links to an existing csv file")
 
         args = parser.parse_args()
         
@@ -364,8 +387,12 @@ try:
         #f = open('/pythonwork/thefile_subset1.csv', 'w')
         #writer = csv.writer(f)
         #f.close()
-
-        with open(filePath + ".csv", 'w', newline='') as csv_file:
+        
+        if args.append is False and os.path.isfile(FILE_NAME + '.csv'):             
+            FILE_NAME = renameFile(FILE_NAME)
+            print("New filename: " + FILE_NAME)
+        filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME)     
+        with open(filePath + ".csv", 'a', newline='') as csv_file:
                 csv_writer = writer(csv_file)
                 time.sleep(2)
                 try:
@@ -397,7 +424,7 @@ try:
                     totalUserPage = len(args.page)
                     currentUserPage = args.page[0]
 
-
+                
                 lastPage = find_last_page(driver)
                 if args.page is None:
                     if args.quiet:
@@ -620,7 +647,7 @@ except Exception as e:
         print("An unexpected error has occurred!")
         print(e)
         traceback.print_exc()
-        #sys.exit("Exiting script")
+        sys.exit("Exiting script")
     # Nothing executes past this comment(meaning nothing executes past sys.exit())
     driver.quit()
 
