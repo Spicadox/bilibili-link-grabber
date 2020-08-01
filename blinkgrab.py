@@ -240,18 +240,17 @@ def find_last_page(driver):
 
 # Currently renames output file if -append is not specified with _#
 def renameFile(FILE_NAME):  
+    # While csv of that name already exist keep renaming
     while os.path.isfile(FILE_NAME + '.csv') == True:
-        # Check whether csv already exist
-        if args.append is False:
-            # Split filename starting from the back once
-            fileNameArray = FILE_NAME.rsplit("_", 1)
-            # Finds if there is any number in the last array index and if not append "_1" to the filename 
-            anyNumber = re.findall(r'[0-9]+', fileNameArray[len(fileNameArray)-1])
-            if anyNumber == []:
-                FILE_NAME = FILE_NAME + "_1"
-            else:
-                nextFileNumber = int(fileNameArray[len(fileNameArray) - 1]) + 1
-                FILE_NAME = fileNameArray[0] + "_" + str(nextFileNumber)
+        # Split filename starting from the back once
+        fileNameArray = FILE_NAME.rsplit("_", 1)
+        # Finds if there is any number in the last array index and if not append "_1" to the filename 
+        anyNumber = re.findall(r'[0-9]+', fileNameArray[len(fileNameArray)-1])
+        if anyNumber == []:
+            FILE_NAME = FILE_NAME + "_1"
+        else:
+            nextFileNumber = int(fileNameArray[len(fileNameArray) - 1]) + 1
+            FILE_NAME = fileNameArray[0] + "_" + str(nextFileNumber)
     return FILE_NAME
 
 try:
@@ -361,9 +360,6 @@ try:
                 duplicatePages.sort()
                 sys.exit('\nDuplicated pages detected: Page ' + ",".join(str(i) for i in duplicatePages))
 
-        
-
-
         # Check for invalid characters in file name and append it to current path
         INVALID_CHARACTERS_RE =  re.compile(r"^[^<>/{}[\]~`]*$")
         #INVALID_CHARACTERS_RE = re.compile(r"\\*?<>:\"/\|")
@@ -381,17 +377,18 @@ try:
             filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME)
             if args.quiet:
                     print("Full File Path: " + filePath + ".csv")
-            
 
         # create variable = open(defaultFile + ".csv", 'w', newline='') so try except, we can use variable.close()
         #f = open('/pythonwork/thefile_subset1.csv', 'w')
         #writer = csv.writer(f)
         #f.close()
         
-        if args.append is False and os.path.isfile(FILE_NAME + '.csv'):             
+        if os.path.isfile(FILE_NAME + '.csv') and args.append == False:             
             FILE_NAME = renameFile(FILE_NAME)
-            print("New filename: " + FILE_NAME)
-        filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME)     
+            if args.quiet:
+                print("New filename: " + FILE_NAME)
+        filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME)    
+
         with open(filePath + ".csv", 'a', newline='') as csv_file:
                 csv_writer = writer(csv_file)
                 time.sleep(2)
