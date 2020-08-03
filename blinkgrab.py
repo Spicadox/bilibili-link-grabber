@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 import requests 
 from bs4 import BeautifulSoup
 from csv import writer 
@@ -14,7 +14,9 @@ from selenium.webdriver.chrome.options import Options
 import os
 import pathlib
 import sys
+import traceback
 
+from collections import Counter
 import re
 import argparse
 import time
@@ -28,12 +30,16 @@ import urllib.request
 #TODO split user url and turn it into usable url(i.e.remove everything after '?' mark)
 #Sites with error: https://space.bilibili.com/654295/video?tid=0&page=1&keyword=&order=pubdate, https://space.bilibili.com/1726310?from=search&seid=12136548391520811086, link is cut at & i.e."https://space.bilibili.com/1726310?from=search"
 # Learn about try, except and raise
-#TODO allow user to choose pages to scrape
 #TODO Decide if this script will support homepage scraping
 #TODO work on allow user to scrape a page with filtered settings
 #TODO Work on opening and then writing rather than rewriting file
 #TODO A summary of successes and failures of getting urls per page
 #TODO If file name contains just periods then save location moves back one 
+#TODO 'from_source' is not recognized as an internal or external command,operable program or batch file.
+
+##Known Errors
+# "response = requests.get(url)" prevents having no urls in the page being written
+# "python No connection adapters were found for 'data:,'" occurred aftering completely finishing --page arugment checks
 
 #Tested Links:
     #a.https://space.bilibili.com/1726310/video
@@ -45,7 +51,8 @@ import urllib.request
         # gets "'from_source' is not recognized as an internal or external command, operable program or batch file." error but everything works due to to not getting full link
     #f.https://search.bilibili.com/all?keyword=no%20radio%20no%20life&from_source=nav_search_new
         # gets "'from_source' is not recognized as an internal or external command, operable program or batch file." error but everything works
-
+    #https://search.bilibili.com/all?keyword=V%E3%81%AE%E3%81%99%E3%81%93%E3%82%93%E3%81%AA%E3%82%AA%E3%82%BF%E6%B4%BB%E3%81%AA%E3%82%93%E3%81%A0%E3%83%AF&from_source=nav_search_new
+    #https://www.bilibili.com/video/BV1DJ411E74M
 
     #h.https://space.bilibili.com/216970/channel/detail?cid=13217
     #i.https://space.bilibili.com/216970/channel/detail?cid=13214
@@ -73,7 +80,6 @@ def make_soup(driver):
 
 def scrape_url(driver):
     i = 1
-
     try:
         if soup.find_all('a', class_='img-anchor') != []:
             try: 
@@ -225,13 +231,28 @@ def find_last_page(driver):
 
         #Tested with: https://space.bilibili.com/1726310?from=search&seid=12136548391520811086
         else:
-            print("Can't find total pages")
-            lastPage = 0
+            lastPage = 1
             return lastPage
 
     except:
         print("Error: Can't get the last page")
         raise Exception
+
+
+# Currently renames output file if -append is not specified with _#
+def renameFile(FILE_NAME):  
+    # While csv of that name already exist keep renaming
+    while os.path.isfile(FILE_NAME + '.csv') == True:
+        # Split filename starting from the back once
+        fileNameArray = FILE_NAME.rsplit("_", 1)
+        # Finds if there is any number in the last array index and if not append "_1" to the filename 
+        anyNumber = re.findall(r'[0-9]+', fileNameArray[len(fileNameArray)-1])
+        if anyNumber == []:
+            FILE_NAME = FILE_NAME + "_1"
+        else:
+            nextFileNumber = int(fileNameArray[len(fileNameArray) - 1]) + 1
+            FILE_NAME = fileNameArray[0] + "_" + str(nextFileNumber)
+    return FILE_NAME
 
 try:
     try: 
@@ -249,7 +270,7 @@ try:
                             type=str,
                             nargs='+',
                             metavar='',
-                            help="Name of the csv file")
+                            help="Name of the csv file. If not specified a default name will be used.")
 
         parser.add_argument('-d', '--driver',
                             type=str,
@@ -280,6 +301,10 @@ try:
                             type=int,
                             nargs='+',
                             help="Select specific page(s) to scrape")
+
+        parser.add_argument('-a', '--append',
+                            action='store_true',
+                            help="Scrape links to an existing csv file")
 
         args = parser.parse_args()
         
@@ -319,6 +344,26 @@ try:
         else:
             wait = 2
 
+        # Ensure that user inputted arguments are valid numbers
+        if args.page is not None:
+            duplicatePages = []
+            countPages= Counter(args.page)
+            pagesList = args.page
+
+            i = 0
+            for pages in pagesList:
+                if pages <= 0:
+                    sys.exit('\nError, page number(s) must be greater than 0.')
+            for i in countPages:
+                if countPages[i] > 1:
+                    duplicatePages.append(i)
+            if duplicatePages != []:
+                duplicatePages.sort()
+                sys.exit('\nDuplicated pages detected: Page ' + ",".join(str(i) for i in duplicatePages))
+        # Sort pages to ensure continuity of normal operation when going through one application pages
+        if args.page is not None:
+            args.page = sorted(args.page)
+
         # Check for invalid characters in file name and append it to current path
         INVALID_CHARACTERS_RE =  re.compile(r"^[^<>/{}[\]~`]*$")
         #INVALID_CHARACTERS_RE = re.compile(r"\\*?<>:\"/\|")
@@ -336,57 +381,72 @@ try:
             filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME)
             if args.quiet:
                     print("Full File Path: " + filePath + ".csv")
-            
 
         # create variable = open(defaultFile + ".csv", 'w', newline='') so try except, we can use variable.close()
         #f = open('/pythonwork/thefile_subset1.csv', 'w')
         #writer = csv.writer(f)
         #f.close()
+        
+        if os.path.isfile(FILE_NAME + '.csv') and args.append == False:             
+            FILE_NAME = renameFile(FILE_NAME)
+            if args.quiet:
+                print("New filename: " + FILE_NAME)
+        filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME)    
 
-        with open(filePath + ".csv", 'w', newline='') as csv_file:
+        with open(filePath + ".csv", 'a', newline='') as csv_file:
                 csv_writer = writer(csv_file)
-                
+                time.sleep(2)
                 try:
                     driver = webdriver.Chrome(DRIVER_PATH + r"\\chromedriver.exe")
                 except: 
                     sys.exit("Error finding ChromeDriver. Please make sure path contains the ChromeDriver.")
 
+                # Start up browser with user's first specified page
+                if args.page is not None:
+                    if "/channel/detail?cid=" in link:
+                        driver.get(link)
 
-                # print("I GOT PASS THIS POINT")    
+                    if "keyword" in link:
+                        driver.get(link + "&page=" + str(args.page[0]))
 
-
-
-                # if args.page is None:
-                #     driver.get(link)
-                # else:
-                #     if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:
-                #         pageExtension = '&page='+str(args.page[0])
-                #     else:
-                #         pageExtension = '?page='+str(args.page[0])
-                #     driver.get(link + pageExtension)
+                    # else:
+                    #     driver.get(link + "?page=" + str(args.page[0]))
+                else:
+                    driver.get(link)
                       
-
-                # print("I GOT PASS THIS POINT")    
 
 
                 soup = make_soup(driver)
+                    
                
+               # Find the last page, total pages, current page in page argument 
                 if args.page is not None:
                     lastUserPage = args.page[len(args.page) - 1]
                     totalUserPage = len(args.page)
                     currentUserPage = args.page[0]
 
-
+                
                 lastPage = find_last_page(driver)
-                if args.page is not None:
+                if args.page is None:
                     if args.quiet:
-                        print("Total Pages: " + str(totalUserPage))
+                        print("Total Pages: " + str(lastPage))
                 elif args.quiet:
-                    print("Total User Selected Pages: " + str(lastPage))
+                    print("Total User Selected Pages: " + str(totalUserPage))
 
                 page = 1
                 pageExtension = ''
                 
+
+                # Another test to ensure that user's pages does not exceed the last page
+                if args.page is not None:
+                    for page in args.page:
+                            if page > lastPage:
+                                driver.quit()
+                                sys.exit("Error, input page("+str(page)+") can't exceed the last page")
+
+
+
+                # If the link does not contain the word 'channel' and is not the last page 
                 if link.find('channel') == -1 and lastPage >= 1:  
                     if args.page is None:
                         if args.quiet:
@@ -394,14 +454,22 @@ try:
                     else:
                         if args.quiet:
                             print("\n" + 'Page:',currentUserPage)
-                    scrape_url(driver)
-                    while page < lastPage or (args.page is not None and currentUserPage < lastUserPage):
-                        page = page + 1
-                        if args.page is not None:
-                            currentUserPage = args.page[currentUserPage + 1]
 
+                    scrape_url(driver)
+                    count = 1
+                    # If the current page is not the last page
+                    # or page argument is selected and the last page has not been reached
+                    i = 0
+                    while (args.page is None and page < lastPage) or (args.page is not None and currentUserPage < lastUserPage):
+                        page = page + 1
+
+                        if args.page is not None:
+                            currentUserPage = int(args.page[count])
+                            if args.quiet:
+                                print("\nPage:",currentUserPage)
+                        count = count + 1
                         if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:
-                            if args.page is not None:
+                            if args.page is None:
                                 pageExtension = '&page='+str(page)
                                 if args.quiet:
                                     print(link+pageExtension)
@@ -417,12 +485,12 @@ try:
                             pageExtension = '?page='+str(page)
                             if args.quiet:
                                 print(link+pageExtension)
-                        
                         # pageExtension = '?page='+str(page)
-
-                        fullUrl = link+pageExtension
+                        if args.page is None:
+                            fullUrl = link + pageExtension
+                        else:
+                            fullUrl = link + pageExtension
                         driver.get(fullUrl)
-
                         #Sleep(2) allows all urls to be scraped
                         # Assume the sleep allows driver to get all of page's source code  before soup initializes
                         # since without it not everypage will get scraped 
@@ -433,18 +501,91 @@ try:
 
                         #driver.set_page_load_timeout(10)
                         #driver.delete_all_cookies()
-                        
                         soup = make_soup(driver)
                         scrape_url(driver)
+                        i = i + 1
+                    if args.quiet:    
+                        print("\n" + 'Extracted:',i ,'URLS')   
+
+#--------------------------------------------------------------------------------------------------------------------------------#
+                    #     # If the current page is not the last page
+                #     # or page argument is selected and the last page has not been reached
+                #     ## (args.page is not None and currentUserPage < lastUserPage)
+                #     if args.page is None:
+                #         while page < lastPage:
+                #             page = page + 1
+
+
+                #         if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:
+                #             pageExtension = '&page='+str(page)
+                #             if args.quiet:
+                #                 print(link+pageExtension)
+                #         else:
+                #             pageExtension = '?page='+str(page)
+                #             if args.quiet:
+                #                 print(link+pageExtension)
+                        
+                #         # pageExtension = '?page='+str(page)
+
+                #         fullUrl = link+pageExtension
+                #         driver.get(fullUrl)
+
+                #         #Sleep(2) allows all urls to be scraped
+                #         # Assume the sleep allows driver to get all of page's source code  before soup initializes
+                #         # since without it not everypage will get scraped 
+                #         if wait > 0:
+                #             time.sleep(wait - 1)
+                #         else:
+                #             time.sleep(wait)
+
+                #         #driver.set_page_load_timeout(10)
+                #         #driver.delete_all_cookies()
+                        
+                #         soup = make_soup(driver)
+                #         scrape_url(driver)
+
+                #     else:
+                #         while currentUserPage < lastUserPage:
+                #             count = 1                           
+                #             currentUserPage = int(args.page[count])
+                #             print(currentUserPage)
+                #             count = count + 1
+                #             if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:                        
+                #                 pageExtension = '&page='+str(page)
+                #             if args.quiet:
+                #                 print(link+pageExtension)
+                                
+                #             pageExtension = '?page='+str(currentUserPage)
+                #             if args.quiet:
+                #                 print(link+pageExtension)
+                        
+                #             fullUrl = str(link) + str(currentUserPage)
+                #             driver.get(fullUrl)
+                #             #Sleep(2) allows all urls to be scraped
+                #             # Assume the sleep allows driver to get all of page's source code  before soup initializes
+                #             # since without it not everypage will get scraped 
+                #             if wait > 0:
+                #                 time.sleep(wait - 1)
+                #             else:
+                #                 time.sleep(wait)
+
+                #             #driver.set_page_load_timeout(10)
+                #             #driver.delete_all_cookies()
+                #             soup = make_soup(driver)
+                #             scrape_url(driver)
+#--------------------------------------------------------------------------------------------------------------------------------#
 
                 # In the event that the webpage is a single page application
                 else:     
-                    try:
-                        i = 1
-                        h = 1 
-                        if args.quiet:
-                            print("\n" + 'Page:',1)
-                        # Loops through all video urls through all pages    
+                    i = 1
+                    h = 1 
+                    if args.quiet and args.page is None:
+                        print("\n" + 'Page:',1)
+                    elif args.quiet and args.page is not None:
+                        print("\n" + 'Page:',currentUserPage)
+                    # Loops through all video urls through all pages
+                    
+                    if args.page is None:    
                         while i <= lastPage:
                             for video in soup.find_all('a', class_='cover cover-normal'):    
                                 link = video['href'].replace('//','https://')
@@ -458,13 +599,52 @@ try:
                                     print("\n" + 'Page:',i + 1)
                                 #TODO Find a better way than using sleep
                                 time.sleep(wait)
-
+                            
                             i = i + 1
+                            soup = make_soup(driver) 
+                    # if args.quiet:    
+                    #     print("\n" + 'Extracted:',h-1 ,'URLS')        
+# TEST
+# https://space.bilibili.com/2489294/channel/index
+                    else:
+                        count = 1
+                        h = 1
+                        counter = 0
+                        
+                        while counter < totalUserPage:
+                            counter = counter + 1
+                            # Change pages by typing page number 
+                            if currentUserPage != 1:
+                                inputPageElement = driver.find_element_by_class_name('be-pager-options-elevator')
+                                inputPage = inputPageElement.find_element_by_class_name('space_input')
+                                inputPage.send_keys(currentUserPage)
+                                inputPage.send_keys(Keys.ENTER)
+
+                            if currentUserPage < lastUserPage:
+                                currentUserPage = int(args.page[count])
+                            
+                            count = count + 1
+
+                            # Need to wait after changing pages and then make_soup to reget new page source
+                            time.sleep(wait)
                             soup = make_soup(driver)
+                            
+                            # Scrape
+                            for video in soup.find_all('a', class_='cover cover-normal'):    
+                                link = video['href'].replace('//','https://')
+                                csv_writer.writerow([link])
+                                if args.quiet:
+                                    print(str(h)+'.' + link)
+                                h = h + 1
+                                
+                            #TODO Find a better way than using sleep
+                            time.sleep(wait)
+
+                            soup = make_soup(driver)
+                            if args.quiet:
+                                print("\n" + 'Page:',currentUserPage)
                         if args.quiet:    
-                            print("\n" + 'Extracted:',h-1 ,'URLS')           
-                    except:
-                        raise Exception
+                            print("\n" + 'Extracted:',h-1 ,'URLS')       
 
                 # Close all windows
                 driver.quit()
@@ -473,10 +653,12 @@ try:
             sys.exit('\nUser cancelled the operation')
         driver.quit()
         
-except Exception:
+except Exception as e:
     if args.quiet:
         print("An unexpected error has occurred!")
-        #sys.exit("Exiting script")
+        print(e)
+        traceback.print_exc()
+        sys.exit("Exiting script")
     # Nothing executes past this comment(meaning nothing executes past sys.exit())
     driver.quit()
 
