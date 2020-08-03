@@ -56,6 +56,7 @@ import urllib.request
 
     #h.https://space.bilibili.com/216970/channel/detail?cid=13217
     #i.https://space.bilibili.com/216970/channel/detail?cid=13214
+    #j.https://space.bilibili.com/2489294/channel/index
 
 #Untested Links:
     #Home pages
@@ -507,73 +508,7 @@ try:
                     if args.quiet:    
                         print("\n" + 'Extracted:',i ,'URLS')   
 
-#--------------------------------------------------------------------------------------------------------------------------------#
-                    #     # If the current page is not the last page
-                #     # or page argument is selected and the last page has not been reached
-                #     ## (args.page is not None and currentUserPage < lastUserPage)
-                #     if args.page is None:
-                #         while page < lastPage:
-                #             page = page + 1
 
-
-                #         if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:
-                #             pageExtension = '&page='+str(page)
-                #             if args.quiet:
-                #                 print(link+pageExtension)
-                #         else:
-                #             pageExtension = '?page='+str(page)
-                #             if args.quiet:
-                #                 print(link+pageExtension)
-                        
-                #         # pageExtension = '?page='+str(page)
-
-                #         fullUrl = link+pageExtension
-                #         driver.get(fullUrl)
-
-                #         #Sleep(2) allows all urls to be scraped
-                #         # Assume the sleep allows driver to get all of page's source code  before soup initializes
-                #         # since without it not everypage will get scraped 
-                #         if wait > 0:
-                #             time.sleep(wait - 1)
-                #         else:
-                #             time.sleep(wait)
-
-                #         #driver.set_page_load_timeout(10)
-                #         #driver.delete_all_cookies()
-                        
-                #         soup = make_soup(driver)
-                #         scrape_url(driver)
-
-                #     else:
-                #         while currentUserPage < lastUserPage:
-                #             count = 1                           
-                #             currentUserPage = int(args.page[count])
-                #             print(currentUserPage)
-                #             count = count + 1
-                #             if soup.find_all(class_='h-inner') != [] and link.find('space') == -1 or link.find('keyword') > -1:                        
-                #                 pageExtension = '&page='+str(page)
-                #             if args.quiet:
-                #                 print(link+pageExtension)
-                                
-                #             pageExtension = '?page='+str(currentUserPage)
-                #             if args.quiet:
-                #                 print(link+pageExtension)
-                        
-                #             fullUrl = str(link) + str(currentUserPage)
-                #             driver.get(fullUrl)
-                #             #Sleep(2) allows all urls to be scraped
-                #             # Assume the sleep allows driver to get all of page's source code  before soup initializes
-                #             # since without it not everypage will get scraped 
-                #             if wait > 0:
-                #                 time.sleep(wait - 1)
-                #             else:
-                #                 time.sleep(wait)
-
-                #             #driver.set_page_load_timeout(10)
-                #             #driver.delete_all_cookies()
-                #             soup = make_soup(driver)
-                #             scrape_url(driver)
-#--------------------------------------------------------------------------------------------------------------------------------#
 
                 # In the event that the webpage is a single page application
                 else:     
@@ -604,8 +539,7 @@ try:
                             soup = make_soup(driver) 
                     # if args.quiet:    
                     #     print("\n" + 'Extracted:',h-1 ,'URLS')        
-# TEST
-# https://space.bilibili.com/2489294/channel/index
+
                     else:
                         count = 1
                         h = 1
