@@ -29,9 +29,11 @@ python bilibiliVideoScraping.py -h
   -w, --wait         The amount of second to stop and wait for browser to load. Recommended for use only if browser
                         is taking longer than 2 seconds to load. Prevent links from being extracted on same page as
                         the next page has yet to load.
-  -q, --quiet       Limit the information printed onto the console as the script executes
+  -p, --page		 Select specific page(s) to scrape
+  -a, --append       Scrape links to an existing csv file
+  -q, --quiet        Limit the information printed onto the console as the script executes
  ```
- Example:`python bilibiliVideoScraping.py -l <Bilibili Link>`
+ Example:`python blinkgrab.py -l <Bilibili Link>`
  
  Note: It is reccommended that to include '&' in any of the argument that the entire argument get enclosed in quotes or double quotes.
  
