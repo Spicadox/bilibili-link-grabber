@@ -150,6 +150,8 @@ def scrape_url(driver):
         else:
             print("Error finding video urls class")
 
+        return i
+
     except:
         driver.quit()
         print("Error finding video urls")
@@ -330,9 +332,9 @@ try:
         if args.name is not None:
             FILE_NAME = "_".join(args.name)
         if args.quiet:
-            print("File Name: " + FILE_NAME)
+            print("File name: " + FILE_NAME)
         elif args.quiet:
-            print("File Name: output")
+            print("File name: output")
 
         # sets link and prints link
         link = args.link
@@ -365,6 +367,14 @@ try:
         if args.page is not None:
             args.page = sorted(args.page)
 
+
+        # If there is already a file of the same name then call the renameFile()
+        if os.path.isfile(FILE_NAME + '.csv') and args.append == False:             
+            FILE_NAME = renameFile(FILE_NAME)
+            if args.quiet:
+                print("New filename: " + FILE_NAME)
+        filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME)
+
         # Check for invalid characters in file name and append it to current path
         INVALID_CHARACTERS_RE =  re.compile(r"^[^<>/{}[\]~`]*$")
         #INVALID_CHARACTERS_RE = re.compile(r"\\*?<>:\"/\|")
@@ -388,11 +398,7 @@ try:
         #writer = csv.writer(f)
         #f.close()
         
-        if os.path.isfile(FILE_NAME + '.csv') and args.append == False:             
-            FILE_NAME = renameFile(FILE_NAME)
-            if args.quiet:
-                print("New filename: " + FILE_NAME)
-        filePath = os.path.abspath(SAVE_PATH + "\\" + FILE_NAME)    
+            
 
         with open(filePath + ".csv", 'a', newline='') as csv_file:
                 csv_writer = writer(csv_file)
@@ -460,7 +466,7 @@ try:
                     count = 1
                     # If the current page is not the last page
                     # or page argument is selected and the last page has not been reached
-                    i = 0
+                    num_urls = 0
                     while (args.page is None and page < lastPage) or (args.page is not None and currentUserPage < lastUserPage):
                         page = page + 1
 
@@ -494,19 +500,21 @@ try:
                         driver.get(fullUrl)
                         #Sleep(2) allows all urls to be scraped
                         # Assume the sleep allows driver to get all of page's source code  before soup initializes
-                        # since without it not everypage will get scraped 
-                        if wait > 0:
-                            time.sleep(wait - 1)
+                        # since without it not every page will get scraped 
+                        if wait < 0:
+                            time.sleep(wait=0)
                         else:
                             time.sleep(wait)
 
                         #driver.set_page_load_timeout(10)
                         #driver.delete_all_cookies()
                         soup = make_soup(driver)
-                        scrape_url(driver)
-                        i = i + 1
-                    if args.quiet:    
-                        print("\n" + 'Extracted:',i ,'URLS')   
+
+                        
+                        num_urls = scrape_url(driver) + num_urls
+                        
+                if args.quiet:    
+                    print("\n" + 'Extracted:',num_urls ,'URLS')   
 
 
 
