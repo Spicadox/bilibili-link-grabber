@@ -51,7 +51,8 @@ import urllib.request
         # gets "'from_source' is not recognized as an internal or external command, operable program or batch file." error but everything works due to to not getting full link
     #f.https://search.bilibili.com/all?keyword=no%20radio%20no%20life&from_source=nav_search_new
         # gets "'from_source' is not recognized as an internal or external command, operable program or batch file." error but everything works
-
+    #https://search.bilibili.com/all?keyword=V%E3%81%AE%E3%81%99%E3%81%93%E3%82%93%E3%81%AA%E3%82%AA%E3%82%BF%E6%B4%BB%E3%81%AA%E3%82%93%E3%81%A0%E3%83%AF&from_source=nav_search_new
+    #https://www.bilibili.com/video/BV1DJ411E74M
 
     #h.https://space.bilibili.com/216970/channel/detail?cid=13217
     #i.https://space.bilibili.com/216970/channel/detail?cid=13214
@@ -359,6 +360,9 @@ try:
             if duplicatePages != []:
                 duplicatePages.sort()
                 sys.exit('\nDuplicated pages detected: Page ' + ",".join(str(i) for i in duplicatePages))
+        # Sort pages to ensure continuity of normal operation when going through one application pages
+        if args.page is not None:
+            args.page = sorted(args.page)
 
         # Check for invalid characters in file name and append it to current path
         INVALID_CHARACTERS_RE =  re.compile(r"^[^<>/{}[\]~`]*$")
@@ -455,6 +459,7 @@ try:
                     count = 1
                     # If the current page is not the last page
                     # or page argument is selected and the last page has not been reached
+                    i = 0
                     while (args.page is None and page < lastPage) or (args.page is not None and currentUserPage < lastUserPage):
                         page = page + 1
 
@@ -498,6 +503,9 @@ try:
                         #driver.delete_all_cookies()
                         soup = make_soup(driver)
                         scrape_url(driver)
+                        i = i + 1
+                    if args.quiet:    
+                        print("\n" + 'Extracted:',i ,'URLS')   
 
 #--------------------------------------------------------------------------------------------------------------------------------#
                     #     # If the current page is not the last page
@@ -576,6 +584,7 @@ try:
                     elif args.quiet and args.page is not None:
                         print("\n" + 'Page:',currentUserPage)
                     # Loops through all video urls through all pages
+                    
                     if args.page is None:    
                         while i <= lastPage:
                             for video in soup.find_all('a', class_='cover cover-normal'):    
@@ -590,33 +599,36 @@ try:
                                     print("\n" + 'Page:',i + 1)
                                 #TODO Find a better way than using sleep
                                 time.sleep(wait)
-
+                            
                             i = i + 1
-                            soup = make_soup(driver)
-                        if args.quiet:    
-                            print("\n" + 'Extracted:',h-1 ,'URLS')       
+                            soup = make_soup(driver) 
+                    # if args.quiet:    
+                    #     print("\n" + 'Extracted:',h-1 ,'URLS')        
 # TEST
 # https://space.bilibili.com/2489294/channel/index
                     else:
                         count = 1
                         h = 1
                         counter = 0
-                        # originally <= 
+                        
                         while counter < totalUserPage:
                             counter = counter + 1
-                            print("CurrentUserPage",currentUserPage)
-                            print("lastUserPage",lastUserPage)
-                            
                             # Change pages by typing page number 
+                            if currentUserPage != 1:
+                                inputPageElement = driver.find_element_by_class_name('be-pager-options-elevator')
+                                inputPage = inputPageElement.find_element_by_class_name('space_input')
+                                inputPage.send_keys(currentUserPage)
+                                inputPage.send_keys(Keys.ENTER)
+
                             if currentUserPage < lastUserPage:
                                 currentUserPage = int(args.page[count])
-                                if currentUserPage != 1:
-                                    inputPageElement = driver.find_element_by_class_name('be-pager-options-elevator')
-                                    inputPage = inputPageElement.find_element_by_class_name('space_input')
-                                    inputPage.send_keys(currentUserPage)
-                                    inputPage.send_keys(Keys.ENTER)
+                            
                             count = count + 1
 
+                            # Need to wait after changing pages and then make_soup to reget new page source
+                            time.sleep(wait)
+                            soup = make_soup(driver)
+                            
                             # Scrape
                             for video in soup.find_all('a', class_='cover cover-normal'):    
                                 link = video['href'].replace('//','https://')
@@ -625,12 +637,14 @@ try:
                                     print(str(h)+'.' + link)
                                 h = h + 1
                                 
-                                #TODO Find a better way than using sleep
+                            #TODO Find a better way than using sleep
                             time.sleep(wait)
 
                             soup = make_soup(driver)
-                    if args.quiet:    
-                        print("\n" + 'Extracted:',h-1 ,'URLS')       
+                            if args.quiet:
+                                print("\n" + 'Page:',currentUserPage)
+                        if args.quiet:    
+                            print("\n" + 'Extracted:',h-1 ,'URLS')       
 
                 # Close all windows
                 driver.quit()
