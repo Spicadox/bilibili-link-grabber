@@ -1,5 +1,4 @@
 # bilibili-link-grabber
-## Testing/Work in Progress
 ### Overview
 This is a simple script that scrapes all the video urls from certain [BiliBili](https://www.bilibili.com/) pages. Currently it is able to scrape all video links from search result pages, user's 投稿(submissions) pages, and user's 频道 (channel) pages. Rather than right clicking each video in order to obtain its url, this script is designed to allow users to obtain all the video urls from each page and writing all of that into a csv file. The csv file can be used by [annie](https://github.com/iawia002/annie) or [youtube-dl](https://github.com/ytdl-org/youtube-dl)(not recommended as youtube-dl doesn't download all parts of the video) to download every single video with the given url in the csv file.
 
@@ -17,9 +16,9 @@ The executable file in the repository is a basic demo version of the current lin
  
 ### Options and Usages
 ```
-python bilibiliVideoScraping.pu [OPTIONS] -l [URL]
+python blinkgrab.py [OPTIONS] -l [URL]
 
-python bilibiliVideoScraping.py -h
+python blinkgrab.py -h
 
   -h, --help         show this help message and exit
   -n, --name         Name of the csv file
@@ -35,7 +34,7 @@ python bilibiliVideoScraping.py -h
  ```
  Example:`python blinkgrab.py -l <Bilibili Link>`
  
- Note: It is reccommended that to include '&' in any of the argument that the entire argument get enclosed in quotes or double quotes.
+ Note: It is reccommended that to include '&' in any of the argument that the entire argument gets enclosed in quotes or double quotes.
  
  ---
  ### This script is intended to be used on the following BiliBili pages: 
