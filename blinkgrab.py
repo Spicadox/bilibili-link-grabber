@@ -304,7 +304,7 @@ try:
 
         parser.add_argument('-a', '--append',
                             action='store_true',
-                            help="Scape links to an existing csv file")
+                            help="Scrape links to an existing csv file")
 
         args = parser.parse_args()
         
