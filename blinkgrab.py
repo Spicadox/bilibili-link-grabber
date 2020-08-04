@@ -263,10 +263,8 @@ try:
         #try catch PermissionError 
         #Catch invalid urls
 
-
         defaultPath = pathlib.Path().absolute()
-        print("Default Save Location:", defaultPath, "\n")
-        parser = argparse.ArgumentParser(prog='biliurls')
+        parser = argparse.ArgumentParser(prog='blinkgrab')
 
         # Arguments
         parser.add_argument('-n', '--name',
@@ -311,7 +309,9 @@ try:
 
         args = parser.parse_args()
         
-        
+        if args.quiet:
+            print("Default Save Location:", defaultPath, "\n")
+
         DRIVER_PATH = str(defaultPath)
         # If --driver is used then the driver path(removing all spaces) is set and printed 
         if args.driver is not None:  
@@ -405,7 +405,8 @@ try:
                 try:
                     driver = webdriver.Chrome(DRIVER_PATH + r"\\chromedriver.exe")
                 except: 
-                    sys.exit("Error finding ChromeDriver. Please make sure path contains the ChromeDriver.")
+                    if args.quiet:
+                        sys.exit("Error finding ChromeDriver. Please make sure path contains the ChromeDriver.")
 
                 # Start up browser with user's first specified page
                 if args.page is not None:
