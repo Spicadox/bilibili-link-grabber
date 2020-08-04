@@ -327,6 +327,11 @@ try:
         if args.quiet:
             print("SAVE PATH: " + SAVE_PATH)
 
+        # sets link and prints link
+        link = args.link
+        if args.quiet:
+            print("Link: " + link + "\n")
+
         # If --name is used then the custom file name is printed else default name is printed 
         FILE_NAME = "output"
         if args.name is not None:
@@ -336,11 +341,6 @@ try:
         elif args.quiet:
             print("File name: output")
 
-        # sets link and prints link
-        link = args.link
-        if args.quiet:
-            print("Link: " + link + "\n")
-        
         # sets wait time
         if args.wait is not None:
             wait = args.wait
@@ -397,8 +397,7 @@ try:
         #f = open('/pythonwork/thefile_subset1.csv', 'w')
         #writer = csv.writer(f)
         #f.close()
-        
-            
+ 
 
         with open(filePath + ".csv", 'a', newline='') as csv_file:
                 csv_writer = writer(csv_file)
@@ -420,12 +419,9 @@ try:
                     #     driver.get(link + "?page=" + str(args.page[0]))
                 else:
                     driver.get(link)
-                      
-
 
                 soup = make_soup(driver)
                     
-               
                # Find the last page, total pages, current page in page argument 
                 if args.page is not None:
                     lastUserPage = args.page[len(args.page) - 1]
@@ -513,29 +509,31 @@ try:
                         
                         num_urls = scrape_url(driver) + num_urls
                         
-                if args.quiet:    
-                    print("\n" + 'Extracted:',num_urls ,'URLS')   
+                    if args.quiet:    
+                        print("\n" + 'Extracted:',num_urls ,'URLS')   
 
 
 
                 # In the event that the webpage is a single page application
                 else:     
                     i = 1
-                    h = 1 
+                    url_counter = 0
                     if args.quiet and args.page is None:
                         print("\n" + 'Page:',1)
                     elif args.quiet and args.page is not None:
                         print("\n" + 'Page:',currentUserPage)
                     # Loops through all video urls through all pages
-                    
+                    # And the page argument is not specified 
                     if args.page is None:    
                         while i <= lastPage:
+                            h = 1
                             for video in soup.find_all('a', class_='cover cover-normal'):    
                                 link = video['href'].replace('//','https://')
                                 csv_writer.writerow([link])
                                 if args.quiet:
                                     print(str(h)+'.' + link)
                                 h = h + 1
+                                url_counter = url_counter + 1
                             if i < lastPage:
                                 driver.find_element_by_class_name('be-pager-next').click()
                                 if args.quiet:
@@ -545,9 +543,10 @@ try:
                             
                             i = i + 1
                             soup = make_soup(driver) 
-                    # if args.quiet:    
-                    #     print("\n" + 'Extracted:',h-1 ,'URLS')        
-
+                        if args.quiet:    
+                            print("\n" + 'Extracted:',url_counter ,'URLS')
+                            
+                    # If its a single page application and page argument is specified
                     else:
                         count = 1
                         h = 1
@@ -570,7 +569,10 @@ try:
                             # Need to wait after changing pages and then make_soup to reget new page source
                             time.sleep(wait)
                             soup = make_soup(driver)
-                            
+
+                            if args.quiet and currentUserPage <= lastUserPage:
+                                print("\n" + 'Page:',currentUserPage)
+
                             # Scrape
                             for video in soup.find_all('a', class_='cover cover-normal'):    
                                 link = video['href'].replace('//','https://')
@@ -583,25 +585,32 @@ try:
                             time.sleep(wait)
 
                             soup = make_soup(driver)
-                            if args.quiet:
-                                print("\n" + 'Page:',currentUserPage)
+                            
                         if args.quiet:    
                             print("\n" + 'Extracted:',h-1 ,'URLS')       
 
                 # Close all windows
                 driver.quit()
     except KeyboardInterrupt:
+        driver.quit()
         if args.quiet:
             sys.exit('\nUser cancelled the operation')
-        driver.quit()
+        else:     
+            sys.exit()
+        
+
         
 except Exception as e:
+    driver.quit()
     if args.quiet:
         print("An unexpected error has occurred!")
         print(e)
         traceback.print_exc()
+        driver.quit()
         sys.exit("Exiting script")
+    else: 
+        sys.exit()
     # Nothing executes past this comment(meaning nothing executes past sys.exit())
-    driver.quit()
+    
 
 
